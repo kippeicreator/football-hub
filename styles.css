@@ -287,6 +287,114 @@ h1 {
   font-size: 1rem;
 }
 
+.topics-section,
+.clubs-section {
+  background: #fffaf1;
+}
+
+.topics-section .section-heading p:not(.eyebrow),
+.teams-section .section-heading p:not(.eyebrow),
+.clubs-section .section-heading p:not(.eyebrow),
+.cities-section .section-heading p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.9;
+}
+
+.topic-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.topic-card,
+.club-grid article,
+.worldcup-summary article {
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.topic-card {
+  min-height: 210px;
+  padding: 24px;
+}
+
+.featured-topic {
+  background: var(--ink);
+  color: var(--white);
+  grid-column: span 2;
+}
+
+.topic-card span,
+.club-grid strong {
+  color: var(--green);
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 900;
+  margin-bottom: 22px;
+  text-transform: uppercase;
+}
+
+.featured-topic span {
+  color: #f0c15b;
+}
+
+.featured-topic p {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.club-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.club-grid article {
+  min-height: 230px;
+  padding: 26px;
+}
+
+.compact-list article {
+  min-height: 190px;
+}
+
+.worldcup-summary {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 46px;
+}
+
+.worldcup-summary article {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 128px;
+  padding: 22px;
+}
+
+.worldcup-summary strong {
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  line-height: 1;
+}
+
+.worldcup-summary span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.section-heading-small {
+  margin-top: 18px;
+}
+
+.section-heading-small h2 {
+  font-size: clamp(1.8rem, 4vw, 3.6rem);
+}
+
 .section {
   padding: clamp(64px, 9vw, 112px) clamp(18px, 5vw, 72px);
 }
@@ -357,6 +465,8 @@ h3 {
 
 .overview-grid p,
 .guide-list p,
+.topic-card p,
+.club-grid p,
 .city-card p,
 .timeline p {
   color: var(--muted);
@@ -518,6 +628,9 @@ h3 {
   .quick-stats,
   .split-section,
   .overview-grid,
+  .topic-grid,
+  .club-grid,
+  .worldcup-summary,
   .city-grid,
   .guide-list,
   .ad-band-bottom {
@@ -556,10 +669,17 @@ h3 {
 
   .quick-stats,
   .overview-grid,
+  .topic-grid,
+  .club-grid,
+  .worldcup-summary,
   .city-grid,
   .guide-list,
   .ad-band-bottom {
     grid-template-columns: 1fr;
+  }
+
+  .featured-topic {
+    grid-column: span 1;
   }
 
   .quick-stats div,
