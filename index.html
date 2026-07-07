@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World Cup 2026 Fan Guide</title>
+    <meta
+      name="description"
+      content="2026年ワールドカップの開催概要、ホスト都市、観戦ポイントをまとめたファンガイド。"
+    >
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23101315'/%3E%3Ctext x='32' y='38' text-anchor='middle' font-family='Arial,sans-serif' font-size='18' font-weight='700' fill='white'%3E26%3C/text%3E%3C/svg%3E"
+    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=Noto+Sans+JP:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="サイトヘッダー">
+      <a class="brand" href="#top" aria-label="World Cup 2026 Fan Guide">
+        <span class="brand-mark">26</span>
+        <span>World Cup 2026</span>
+      </a>
+      <nav class="nav" aria-label="メインナビゲーション">
+        <a href="#overview">概要</a>
+        <a href="#cities">開催都市</a>
+        <a href="#timeline">日程</a>
+        <a href="#guide">観戦ガイド</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero-image" src="assets/hero-stadium.png" alt="夕暮れのサッカースタジアム">
+        <div class="hero-shade"></div>
+        <div class="hero-content">
+          <p class="eyebrow">Canada · Mexico · United States</p>
+          <h1 id="hero-title">World Cup 2026 Fan Guide</h1>
+          <p class="hero-copy">
+            48チーム、3カ国、16都市。北米全体を舞台に広がる世界最大級のサッカートーナメントを、開催地と日程から俯瞰する。
+          </p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#overview">大会を見る</a>
+            <a class="secondary-button" href="#cities">都市を探す</a>
+          </div>
+        </div>
+        <div class="countdown-panel" aria-live="polite">
+          <span class="panel-label" id="countdown-label">Final countdown</span>
+          <strong id="countdown-days">--</strong>
+          <span id="countdown-detail">日</span>
+        </div>
+      </section>
+
+      <section class="quick-stats" aria-label="大会データ">
+        <div>
+          <strong>48</strong>
+          <span>出場チーム</span>
+        </div>
+        <div>
+          <strong>104</strong>
+          <span>試合</span>
+        </div>
+        <div>
+          <strong>16</strong>
+          <span>開催都市</span>
+        </div>
+        <div>
+          <strong>39</strong>
+          <span>大会日数</span>
+        </div>
+      </section>
+
+      <aside class="ad-band" aria-label="広告">
+        <div class="ad-slot ad-slot-wide">
+          <span>Advertisement</span>
+          <strong>Travel, tickets, and matchday partners</strong>
+        </div>
+      </aside>
+
+      <section class="section split-section" id="overview">
+        <div class="section-copy">
+          <p class="eyebrow">Tournament Overview</p>
+          <h2>初の3カ国共催、拡大フォーマット。</h2>
+          <p>
+            2026年大会はカナダ、メキシコ、アメリカの共同開催。出場枠は32から48へ拡大され、グループステージから決勝まで全104試合が行われる。
+          </p>
+        </div>
+        <div class="overview-grid" aria-label="大会概要">
+          <article>
+            <span class="icon">◎</span>
+            <h3>開催期間</h3>
+            <p>2026年6月11日から7月19日まで。</p>
+          </article>
+          <article>
+            <span class="icon">△</span>
+            <h3>決勝</h3>
+            <p>New York/New Jerseyエリアで開催予定。</p>
+          </article>
+          <article>
+            <span class="icon">◇</span>
+            <h3>ホスト</h3>
+            <p>カナダ2都市、メキシコ3都市、アメリカ11都市。</p>
+          </article>
+          <article>
+            <span class="icon">◌</span>
+            <h3>フォーマット</h3>
+            <p>12グループ制からノックアウトステージへ進む構成。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section cities-section" id="cities">
+        <div class="section-heading">
+          <p class="eyebrow">Host Cities</p>
+          <h2>16の開催都市</h2>
+        </div>
+        <div class="city-filters" role="tablist" aria-label="国で絞り込み">
+          <button class="filter-button is-active" type="button" data-filter="all" role="tab" aria-selected="true">All</button>
+          <button class="filter-button" type="button" data-filter="Canada" role="tab" aria-selected="false">Canada</button>
+          <button class="filter-button" type="button" data-filter="Mexico" role="tab" aria-selected="false">Mexico</button>
+          <button class="filter-button" type="button" data-filter="United States" role="tab" aria-selected="false">USA</button>
+        </div>
+        <div class="city-grid" id="city-grid"></div>
+      </section>
+
+      <section class="section timeline-section" id="timeline">
+        <div class="section-heading">
+          <p class="eyebrow">Match Timeline</p>
+          <h2>大会の流れ</h2>
+        </div>
+        <ol class="timeline">
+          <li>
+            <time datetime="2026-06-11">Jun 11</time>
+            <div>
+              <h3>開幕戦</h3>
+              <p>メキシコシティから大会がスタート。</p>
+            </div>
+          </li>
+          <li>
+            <time datetime="2026-06-11/2026-06-27">Jun 11-27</time>
+            <div>
+              <h3>グループステージ</h3>
+              <p>12グループ、48チームが決勝トーナメント進出を争う。</p>
+            </div>
+          </li>
+          <li>
+            <time datetime="2026-06-28/2026-07-18">Jun 28-Jul 18</time>
+            <div>
+              <h3>ノックアウト</h3>
+              <p>Round of 32から3位決定戦まで、各都市で一発勝負が続く。</p>
+            </div>
+          </li>
+          <li>
+            <time datetime="2026-07-19">Jul 19</time>
+            <div>
+              <h3>決勝</h3>
+              <p>New York/New Jerseyエリアで王者が決まる。</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section guide-section" id="guide">
+        <div class="section-heading">
+          <p class="eyebrow">Fan Guide</p>
+          <h2>観戦前に押さえること</h2>
+        </div>
+        <div class="guide-list">
+          <article>
+            <h3>移動距離を先に見る</h3>
+            <p>北米全域の開催なので、都市間移動は飛行機前提になるケースが多い。連戦観戦は地域ごとに組むと動きやすい。</p>
+          </article>
+          <article>
+            <h3>暑さと時差を読む</h3>
+            <p>6月から7月の開催で、都市ごとに気温差が大きい。キックオフ時間と移動後の時差をまとめて確認したい。</p>
+          </article>
+          <article>
+            <h3>宿泊は会場アクセス優先</h3>
+            <p>一部会場は都市中心部から距離がある。スタジアム名だけでなく、最寄り交通と帰路の混雑を見て選ぶ。</p>
+          </article>
+        </div>
+      </section>
+
+      <aside class="ad-band ad-band-bottom" aria-label="広告">
+        <div class="ad-slot">
+          <span>Advertisement</span>
+          <strong>Featured fan offer</strong>
+        </div>
+        <div class="ad-slot">
+          <span>Advertisement</span>
+          <strong>Host city guide sponsor</strong>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="site-footer">
+      <p>Fan-made guide. Not affiliated with FIFA.</p>
+      <a href="#top">Back to top</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
