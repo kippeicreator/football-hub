@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Football Hub favicon">
+  <rect width="64" height="64" rx="14" fill="#101315"/>
+  <circle cx="32" cy="32" r="20" fill="#f7f3ec"/>
+  <path d="M32 13 43 22 39 37H25L21 22Z" fill="#101315"/>
+  <path d="M20 22 9 27 15 42 25 37ZM44 22 55 27 49 42 39 37ZM25 37 22 51H42L39 37Z" fill="#0b7f5f"/>
+  <path d="M32 13V5M32 59v-8M13 32H5M59 32h-8" stroke="#d59b31" stroke-width="4" stroke-linecap="round"/>
+</svg>

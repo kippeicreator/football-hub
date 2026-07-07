@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kippeicreator.github.io/worldcup2026/sitemap.xml
