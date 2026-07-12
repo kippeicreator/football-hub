@@ -55,11 +55,18 @@ buttons.forEach((button) => {
   button.addEventListener("click", () => {
     buttons.forEach((item) => {
       item.classList.remove("is-active");
-      item.setAttribute("aria-selected", "false");
+      item.setAttribute("aria-pressed", "false");
     });
     button.classList.add("is-active");
-    button.setAttribute("aria-selected", "true");
+    button.setAttribute("aria-pressed", "true");
     renderCities(button.dataset.filter);
+  });
+
+  button.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      button.click();
+    }
   });
 });
 
