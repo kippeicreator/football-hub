@@ -361,7 +361,7 @@ h1 {
 .spotlight-card:hover,
 .history-card:hover,
 .club-grid article:hover,
-.guide-list article:hover,
+.guide-list .guide-card:hover,
 .city-card:hover,
 .info-grid article:hover {
   border-color: rgba(11, 127, 95, 0.34);
@@ -500,7 +500,7 @@ h2 {
 }
 
 .overview-grid article,
-.guide-list article,
+.guide-list .guide-card,
 .city-card {
   background: rgba(255, 255, 255, 0.58);
   border: 1px solid var(--line);
@@ -790,7 +790,7 @@ h3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.guide-list article {
+.guide-list .guide-card {
   min-height: 236px;
   padding: 26px;
 }
