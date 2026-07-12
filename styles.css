@@ -36,6 +36,22 @@ a {
   text-decoration: none;
 }
 
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.menu-toggle:focus-visible,
+.content-filter:focus-visible,
+.filter-button:focus-visible,
+.back-to-top:focus-visible {
+  box-shadow: 0 0 0 3px var(--gold);
+  outline: 0;
+}
+
 .skip-link {
   background: var(--gold);
   color: #17110a;
