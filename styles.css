@@ -952,6 +952,41 @@ h3 {
   margin-top: 8px;
 }
 
+.table-scroll {
+  margin-top: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.history-table {
+  border-collapse: collapse;
+  min-width: 560px;
+  width: 100%;
+}
+
+.history-table th,
+.history-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.history-table th {
+  background: var(--ink);
+  color: var(--white);
+  font-size: 0.82rem;
+}
+
+.history-table td {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .article-note {
   background: #ece5d9;
   border-left: 4px solid var(--gold);
