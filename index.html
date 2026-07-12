@@ -44,10 +44,24 @@
         <span class="brand-mark" aria-hidden="true">FH</span>
         <span>Football Hub</span>
       </a>
-      <nav class="nav" aria-label="Primary site sections">
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-controls="primary-nav"
+        aria-expanded="false"
+        aria-label="Open navigation menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav" id="primary-nav" aria-label="Primary site sections">
         <a href="#topics">Latest Football Topics</a>
+        <a href="#match-center">Match Center</a>
+        <a href="#team-finder">Team Finder</a>
+        <a href="#spotlight">Player Spotlight</a>
         <a href="#competitions">Major Competitions</a>
-        <a href="#teams">National Teams</a>
+        <a href="#history">History</a>
         <a href="#clubs">Club Football</a>
         <a href="#worldcup2026">World Cup 2026</a>
         <a href="#guides">Popular Guides</a>
@@ -88,7 +102,7 @@
           <span>World Cup 2026</span>
         </div>
         <div>
-          <a class="category-link" href="#teams" aria-label="National teams category">
+          <a class="category-link" href="#team-finder" aria-label="National teams category">
             <strong>NT</strong>
           </a>
           <span>National Teams</span>
@@ -118,7 +132,7 @@
         <div class="topic-grid" aria-label="Search-focused football topic cards">
           <article class="topic-card featured-topic">
             <span>World Cup</span>
-            <h3>World Cup 2026 schedule</h3>
+            <h3><a class="card-title-link" href="world-cup-2026-schedule/">World Cup 2026 schedule</a></h3>
             <p>開催期間、試合日程、決勝までの流れを整理する大会スケジュールガイド。</p>
           </article>
           <article class="topic-card">
@@ -147,11 +161,156 @@
             <p>歴代優勝国、決勝カード、名勝負を振り返るロングテール記事向けテーマ。</p>
           </article>
         </div>
+        <div class="content-tools" aria-label="Article search and filters">
+          <label class="search-box" for="article-search">
+            <span>Article search</span>
+            <input id="article-search" type="search" placeholder="Search topics, leagues, teams, rules...">
+          </label>
+          <div class="filter-row" role="list" aria-label="Article category filters">
+            <button class="content-filter is-active" type="button" data-category="all">All</button>
+            <button class="content-filter" type="button" data-category="World Cup">World Cup</button>
+            <button class="content-filter" type="button" data-category="Leagues">Leagues</button>
+            <button class="content-filter" type="button" data-category="Teams">Teams</button>
+            <button class="content-filter" type="button" data-category="Players">Players</button>
+            <button class="content-filter" type="button" data-category="Guides">Guides</button>
+            <button class="content-filter" type="button" data-category="History">History</button>
+          </div>
+          <p class="result-count" id="article-count" aria-live="polite"></p>
+        </div>
+        <div class="article-grid" id="article-grid" aria-label="SEO-focused article cards">
+          <article class="article-card" data-category="World Cup" data-keywords="world cup 2026 schedule fixtures dates">
+            <span>World Cup</span>
+            <h3>World Cup 2026 Schedule</h3>
+            <p>大会期間、主要日程、決勝までの流れをまとめるスケジュール記事。</p>
+          </article>
+          <article class="article-card" data-category="World Cup" data-keywords="world cup groups draw 2026">
+            <span>World Cup</span>
+            <h3>World Cup Groups</h3>
+            <p>組み合わせ、グループステージ方式、勝ち上がり条件を整理。</p>
+          </article>
+          <article class="article-card" data-category="World Cup" data-keywords="world cup stadiums host cities venues">
+            <span>World Cup</span>
+            <h3>World Cup Stadiums</h3>
+            <p>開催都市、会場、アクセス、観戦前に見たい基本情報。</p>
+          </article>
+          <article class="article-card" data-category="Teams" data-keywords="japan national team samurai blue next match">
+            <span>Teams</span>
+            <h3>Japan National Team</h3>
+            <p>日本代表の次戦、招集、注目選手、予選情報への入口。</p>
+          </article>
+          <article class="article-card" data-category="Leagues" data-keywords="premier league standings fixtures table">
+            <span>Leagues</span>
+            <h3>Premier League</h3>
+            <p>順位表、優勝争い、注目カード、クラブ別の見どころ。</p>
+          </article>
+          <article class="article-card" data-category="Leagues" data-keywords="la liga standings fixtures real madrid barcelona">
+            <span>Leagues</span>
+            <h3>La Liga</h3>
+            <p>スペイン主要クラブ、順位、クラシコ、欧州カップ争い。</p>
+          </article>
+          <article class="article-card" data-category="Leagues" data-keywords="serie a standings fixtures italy">
+            <span>Leagues</span>
+            <h3>Serie A</h3>
+            <p>イタリアリーグの順位、強豪クラブ、注目選手を追う。</p>
+          </article>
+          <article class="article-card" data-category="Leagues" data-keywords="bundesliga table fixtures germany">
+            <span>Leagues</span>
+            <h3>Bundesliga</h3>
+            <p>ドイツリーグの優勝争い、若手選手、欧州出場権を整理。</p>
+          </article>
+          <article class="article-card" data-category="Leagues" data-keywords="ligue 1 standings fixtures france">
+            <span>Leagues</span>
+            <h3>Ligue 1</h3>
+            <p>フランスリーグの主要クラブ、順位、注目タレントの入口。</p>
+          </article>
+          <article class="article-card" data-category="Leagues" data-keywords="uefa champions league fixtures draw final">
+            <span>Competitions</span>
+            <h3>UEFA Champions League</h3>
+            <p>fixtures、抽選、ノックアウト、決勝までを追える大会ガイド。</p>
+          </article>
+          <article class="article-card" data-category="Leagues" data-keywords="europa league fixtures table final">
+            <span>Competitions</span>
+            <h3>Europa League</h3>
+            <p>欧州第2大会の仕組み、日程、注目クラブをまとめる。</p>
+          </article>
+          <article class="article-card" data-category="Players" data-keywords="ballon d'or winners nominees history">
+            <span>Players</span>
+            <h3>Ballon d'Or</h3>
+            <p>歴代受賞者、候補、受賞傾向、スター選手の評価軸。</p>
+          </article>
+          <article class="article-card" data-category="Teams" data-keywords="fifa rankings national teams world ranking">
+            <span>Teams</span>
+            <h3>FIFA Rankings</h3>
+            <p>代表ランキングの見方、上位国、国際大会への影響。</p>
+          </article>
+          <article class="article-card" data-category="Guides" data-keywords="football positions goalkeeper defender midfielder forward">
+            <span>Guides</span>
+            <h3>Football Positions</h3>
+            <p>GK、DF、MF、FWの役割と現代サッカーでの変化。</p>
+          </article>
+          <article class="article-card" data-category="Guides" data-keywords="football rules offside fouls var handball">
+            <span>Guides</span>
+            <h3>Football Rules</h3>
+            <p>オフサイド、ファウル、VAR、ハンドなど基本ルールを解説。</p>
+          </article>
+          <article class="article-card" data-category="Players" data-keywords="best football players ranking messi ronaldo mbappe">
+            <span>Players</span>
+            <h3>Best Football Players</h3>
+            <p>現役スター、歴代名手、ポジション別評価につなげる記事。</p>
+          </article>
+          <article class="article-card" data-category="History" data-keywords="greatest world cup finals history classic matches">
+            <span>History</span>
+            <h3>Greatest World Cup Finals</h3>
+            <p>記憶に残る決勝、名勝負、時代を変えた大会を振り返る。</p>
+          </article>
+          <article class="article-card" data-category="Leagues" data-keywords="top clubs in europe ranking best teams">
+            <span>Clubs</span>
+            <h3>Top Clubs in Europe</h3>
+            <p>欧州の強豪クラブ、実績、人気、現在地を比較する。</p>
+          </article>
+          <article class="article-card" data-category="Guides" data-keywords="transfer market guide window fees rumors">
+            <span>Guides</span>
+            <h3>Transfer Market Guide</h3>
+            <p>移籍期間、移籍金、契約、噂の読み方を整理する。</p>
+          </article>
+          <article class="article-card" data-category="Guides" data-keywords="football tactics formation pressing counter attack">
+            <span>Guides</span>
+            <h3>Football Tactics</h3>
+            <p>フォーメーション、プレス、カウンター、ビルドアップの基礎。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section match-section" id="match-center">
+        <div class="section-heading">
+          <p class="eyebrow">Match Center</p>
+          <h2>試合前に見る情報をひとまとめに。</h2>
+          <p>
+            外部APIなしの静的データで、試合プレビューに必要な観点を整理します。将来は日程APIやライブデータへ拡張できます。
+          </p>
+        </div>
+        <div class="utility-grid">
+          <article class="utility-card">
+            <span>Preview</span>
+            <h3>Key match questions</h3>
+            <p>直近成績、対戦相性、主力選手、怪我人、戦術の注目点をチェック。</p>
+          </article>
+          <article class="utility-card">
+            <span>Calendar</span>
+            <h3>Competition windows</h3>
+            <p>代表ウィーク、欧州カップ、国内リーグの見方を整理。</p>
+          </article>
+          <article class="utility-card">
+            <span>Checklist</span>
+            <h3>Before kickoff</h3>
+            <p>スタメン、会場、時差、放送、順位への影響を試合前に確認。</p>
+          </article>
+        </div>
       </section>
 
       <section class="section split-section" id="competitions">
         <div class="section-copy">
-          <p class="eyebrow">Major Competitions</p>
+          <p class="eyebrow">Featured Competitions</p>
           <h2>主要大会を比較して追える構成。</h2>
           <p>
             国際大会、欧州カップ、国内リーグを横断して、試合日程・順位・歴史・注目選手へつながる総合サイトの土台を作ります。
@@ -181,10 +340,10 @@
         </div>
       </section>
 
-      <section class="section teams-section" id="teams">
+      <section class="section teams-section" id="team-finder">
         <div class="section-heading">
-          <p class="eyebrow">National Teams</p>
-          <h2>代表チーム情報のハブ。</h2>
+          <p class="eyebrow">Team Finder</p>
+          <h2>代表・クラブを探しやすくする。</h2>
           <p>
             日本代表、強豪国、ワールドカップ予選、国際親善試合をカテゴリ化し、将来的な試合プレビューや選手名鑑につなげます。
           </p>
@@ -201,6 +360,31 @@
           <article>
             <h3>International calendar</h3>
             <p>国際Aマッチウィーク、予選、親善試合の日程記事へ展開。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section spotlight-section" id="spotlight">
+        <div class="section-heading">
+          <p class="eyebrow">Player Spotlight</p>
+          <h2>選手を軸に記事を広げる。</h2>
+          <p>スター選手、若手、受賞候補、ポジション別の比較記事へ展開しやすいカードです。</p>
+        </div>
+        <div class="spotlight-grid">
+          <article class="spotlight-card">
+            <span>Forwards</span>
+            <h3>Goal scorers to watch</h3>
+            <p>得点力、決定力、ビッグマッチでの影響力を比較する入口。</p>
+          </article>
+          <article class="spotlight-card">
+            <span>Midfielders</span>
+            <h3>Creative engines</h3>
+            <p>チャンスメイク、ゲームコントロール、守備貢献を整理。</p>
+          </article>
+          <article class="spotlight-card">
+            <span>Young talents</span>
+            <h3>Next generation stars</h3>
+            <p>ワールドカップや欧州大会で注目される若手を追う。</p>
           </article>
         </div>
       </section>
@@ -228,6 +412,31 @@
             <strong>Players</strong>
             <h3>Stars and transfers</h3>
             <p>注目選手、移籍の噂、個人成績、受賞歴につながるカテゴリ。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section history-section" id="history">
+        <div class="section-heading">
+          <p class="eyebrow">Football History</p>
+          <h2>歴史系コンテンツで長期流入を狙う。</h2>
+          <p>歴代優勝国、名勝負、名選手、戦術の変化など、時期に左右されにくい記事を育てます。</p>
+        </div>
+        <div class="history-grid">
+          <article class="history-card">
+            <span>World Cup</span>
+            <h3>Past winners and classic finals</h3>
+            <p>歴代優勝国、決勝カード、時代を象徴した大会を整理。</p>
+          </article>
+          <article class="history-card">
+            <span>Clubs</span>
+            <h3>European dynasties</h3>
+            <p>欧州を支配したクラブ、黄金期、名監督を振り返る。</p>
+          </article>
+          <article class="history-card">
+            <span>Tactics</span>
+            <h3>How football evolved</h3>
+            <p>フォーメーション、プレス、ポゼッション、現代戦術の変化。</p>
           </article>
         </div>
       </section>
@@ -313,18 +522,60 @@
           <p class="eyebrow">Popular Guides</p>
           <h2>長く読まれる解説記事を増やす。</h2>
         </div>
-        <div class="guide-list">
-          <article>
+        <label class="search-box guide-search" for="guide-search">
+          <span>Guide search</span>
+          <input id="guide-search" type="search" placeholder="Search rules, tactics, teams, travel...">
+        </label>
+        <div class="guide-list" id="guide-list">
+          <article class="guide-card" data-guide-keywords="competitions league cup group knockout">
             <h3>How football competitions work</h3>
             <p>リーグ戦、カップ戦、グループステージ、ノックアウト方式を初心者にも分かる形で整理。</p>
           </article>
-          <article>
+          <article class="guide-card" data-guide-keywords="national teams international calendar qualifiers">
             <h3>How to follow national teams</h3>
             <p>代表戦の日程、招集メンバー、予選方式、国際大会の見方をまとめる。</p>
           </article>
-          <article>
+          <article class="guide-card" data-guide-keywords="world cup travel stadium host cities">
             <h3>World Cup travel basics</h3>
             <p>開催都市、移動距離、時差、気候、スタジアムアクセスを確認する旅行者向けガイド。</p>
+          </article>
+          <article class="guide-card" data-guide-keywords="rules offside var handball fouls">
+            <h3>Rules beginners should know</h3>
+            <p>オフサイド、VAR、ファウル、カード、ハンドの基本を整理。</p>
+          </article>
+          <article class="guide-card" data-guide-keywords="tactics formations pressing counter attack">
+            <h3>Tactics for new fans</h3>
+            <p>4-3-3、プレス、カウンター、ビルドアップの見方。</p>
+          </article>
+          <article class="guide-card" data-guide-keywords="transfer market contracts fees windows">
+            <h3>Transfer market basics</h3>
+            <p>移籍期間、契約、移籍金、ローン、噂の読み解き方。</p>
+          </article>
+        </div>
+        <p class="result-count" id="guide-count" aria-live="polite"></p>
+      </section>
+
+      <section class="section info-section" id="about">
+        <div class="section-heading">
+          <p class="eyebrow">About Football Hub</p>
+          <h2>公開サイトとしての基本情報。</h2>
+        </div>
+        <div class="info-grid">
+          <article>
+            <h3>About</h3>
+            <p>Football Hubは、サッカーをより探しやすく理解しやすくするための静的情報サイトです。</p>
+          </article>
+          <article>
+            <h3>Editorial Policy</h3>
+            <p>読者が試合、チーム、大会、歴史を比較しやすいよう、分かりやすい構成と中立的な説明を重視します。</p>
+          </article>
+          <article>
+            <h3>Contact</h3>
+            <p>お問い合わせ導線は今後整備予定です。現段階ではポートフォリオ用の公開サイトとして運用します。</p>
+          </article>
+          <article>
+            <h3>Privacy Policy</h3>
+            <p>現時点ではAnalytics、広告、外部APIによる個人データ収集は行っていません。</p>
           </article>
         </div>
       </section>
@@ -345,15 +596,20 @@
       <p>Independent football guide. Not affiliated with FIFA, UEFA, clubs, or leagues.</p>
       <nav class="footer-nav" aria-label="Footer section links">
         <a href="#topics">Topics</a>
+        <a href="#match-center">Match Center</a>
+        <a href="#team-finder">Team Finder</a>
         <a href="#competitions">Competitions</a>
-        <a href="#teams">Teams</a>
+        <a href="#spotlight">Players</a>
+        <a href="#history">History</a>
         <a href="#clubs">Clubs</a>
         <a href="#worldcup2026">World Cup 2026</a>
         <a href="#guides">Guides</a>
+        <a href="#about">About</a>
         <a href="#top">Back to top</a>
       </nav>
     </footer>
 
+    <button class="back-to-top" type="button" aria-label="Back to top">↑</button>
     <script src="script.js"></script>
   </body>
 </html>

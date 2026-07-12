@@ -19,6 +19,19 @@ const cities = [
 
 const grid = document.querySelector("#city-grid");
 const buttons = document.querySelectorAll(".filter-button");
+const header = document.querySelector(".site-header");
+const menuToggle = document.querySelector(".menu-toggle");
+const navLinks = document.querySelectorAll(".nav a");
+const articleSearch = document.querySelector("#article-search");
+const articleCards = document.querySelectorAll(".article-card");
+const articleFilters = document.querySelectorAll(".content-filter");
+const articleCount = document.querySelector("#article-count");
+const guideSearch = document.querySelector("#guide-search");
+const guideCards = document.querySelectorAll(".guide-card");
+const guideCount = document.querySelector("#guide-count");
+const backToTop = document.querySelector(".back-to-top");
+
+let activeArticleCategory = "all";
 
 function renderCities(filter = "all") {
   grid.innerHTML = "";
@@ -50,6 +63,127 @@ buttons.forEach((button) => {
   });
 });
 
+function normalize(value) {
+  return value.toLowerCase().trim();
+}
+
+function cardMatchesSearch(card, query) {
+  if (!query) {
+    return true;
+  }
+
+  const text = `${card.textContent} ${card.dataset.keywords || ""} ${card.dataset.guideKeywords || ""}`;
+  return normalize(text).includes(query);
+}
+
+function updateArticleCards() {
+  const query = normalize(articleSearch?.value || "");
+  let visible = 0;
+
+  articleCards.forEach((card) => {
+    const categoryMatch = activeArticleCategory === "all" || card.dataset.category === activeArticleCategory;
+    const searchMatch = cardMatchesSearch(card, query);
+    const isVisible = categoryMatch && searchMatch;
+    card.classList.toggle("is-hidden", !isVisible);
+    if (isVisible) {
+      visible += 1;
+    }
+  });
+
+  if (articleCount) {
+    articleCount.textContent = `${visible} topic${visible === 1 ? "" : "s"} shown`;
+  }
+}
+
+function updateGuideCards() {
+  const query = normalize(guideSearch?.value || "");
+  let visible = 0;
+
+  guideCards.forEach((card) => {
+    const isVisible = cardMatchesSearch(card, query);
+    card.classList.toggle("is-hidden", !isVisible);
+    if (isVisible) {
+      visible += 1;
+    }
+  });
+
+  if (guideCount) {
+    guideCount.textContent = `${visible} guide${visible === 1 ? "" : "s"} shown`;
+  }
+}
+
+articleFilters.forEach((button) => {
+  button.addEventListener("click", () => {
+    articleFilters.forEach((item) => item.classList.remove("is-active"));
+    button.classList.add("is-active");
+    activeArticleCategory = button.dataset.category;
+    updateArticleCards();
+  });
+});
+
+articleSearch?.addEventListener("input", updateArticleCards);
+guideSearch?.addEventListener("input", updateGuideCards);
+
+menuToggle?.addEventListener("click", () => {
+  const isOpen = header.classList.toggle("nav-open");
+  menuToggle.setAttribute("aria-expanded", String(isOpen));
+  menuToggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+});
+
+navLinks.forEach((link) => {
+  link.addEventListener("click", () => {
+    header.classList.remove("nav-open");
+    menuToggle?.setAttribute("aria-expanded", "false");
+    menuToggle?.setAttribute("aria-label", "Open navigation menu");
+  });
+});
+
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    const target = document.querySelector(link.getAttribute("href"));
+    if (!target) {
+      return;
+    }
+    event.preventDefault();
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+
+function updateBackToTop() {
+  backToTop?.classList.toggle("is-visible", window.scrollY > 520);
+}
+
+backToTop?.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+window.addEventListener("scroll", updateBackToTop, { passive: true });
+
+const revealTargets = document.querySelectorAll(
+  ".topic-card, .article-card, .utility-card, .spotlight-card, .history-card, .club-grid article, .guide-list article, .city-card, .info-grid article"
+);
+
+if ("IntersectionObserver" in window) {
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12 }
+  );
+
+  revealTargets.forEach((target) => {
+    target.classList.add("reveal-on-scroll");
+    revealObserver.observe(target);
+  });
+} else {
+  revealTargets.forEach((target) => target.classList.add("is-visible"));
+}
+
 function updateCountdown() {
   const now = new Date();
   const kickoff = new Date("2026-06-11T19:00:00-05:00");
@@ -80,3 +214,6 @@ function updateCountdown() {
 
 renderCities();
 updateCountdown();
+updateArticleCards();
+updateGuideCards();
+updateBackToTop();
