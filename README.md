@@ -21,6 +21,16 @@ navigation, and richer football guide sections.
 - Back-to-top button and subtle scroll reveal interactions
 - About, Editorial Policy, Contact, and Privacy Policy content blocks
 
+## Quality checks
+
+Run the static site validation locally with:
+
+```bash
+python3 scripts/validate_site.py
+```
+
+The check validates HTML basic elements, JSON-LD, internal links, and the XML sitemap. The same command runs on pushes and pull requests targeting `main`.
+
 ## Future Roadmap
 
 - Add football data API integrations for fixtures, standings, teams, and player
