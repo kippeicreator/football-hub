@@ -952,6 +952,24 @@ h3 {
   margin-top: 8px;
 }
 
+.related-guides .guide-list {
+  margin-top: 20px;
+}
+
+.related-guides .guide-card {
+  min-height: 0;
+  padding: 20px;
+}
+
+.related-guides .guide-card h3 {
+  font-size: 1.05rem;
+  margin: 0 0 8px;
+}
+
+.related-guides .guide-card p {
+  margin: 0;
+}
+
 .table-scroll {
   margin-top: 20px;
   overflow-x: auto;
