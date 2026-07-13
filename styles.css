@@ -346,7 +346,7 @@ h1 {
 .utility-card,
 .spotlight-card,
 .history-card,
-.club-grid article,
+.club-grid > *,
 .info-grid article,
 .worldcup-summary article {
   background: rgba(255, 255, 255, 0.64);
@@ -360,7 +360,7 @@ h1 {
 .utility-card:hover,
 .spotlight-card:hover,
 .history-card:hover,
-.club-grid article:hover,
+.club-grid > *:hover,
 .guide-list .guide-card:hover,
 .city-card:hover,
 .info-grid article:hover {
@@ -420,7 +420,7 @@ h1 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.club-grid article {
+.club-grid > * {
   min-height: 230px;
   padding: 26px;
 }
