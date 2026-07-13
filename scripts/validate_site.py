@@ -13,7 +13,7 @@ from xml.etree import ElementTree
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE_URL = "https://kippeicreator.github.io/worldcup2026/"
+BASE_URL = "https://kippeicreator.github.io/football-hub/"
 
 
 @dataclass
