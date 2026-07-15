@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kippeicreator.github.io/football-hub/sitemap.xml
+Sitemap: https://vekpal.com/sitemap.xml
