@@ -14,6 +14,10 @@ from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = "https://vekpal.com/"
+ADSENSE_SCRIPT_BASE = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+ADSENSE_CLIENT_ID = "ca-pub-6151638978197241"
+ADSENSE_SCRIPT_SRC = f"{ADSENSE_SCRIPT_BASE}?client={ADSENSE_CLIENT_ID}"
+ADS_TXT_RECORD = "google.com, pub-6151638978197241, DIRECT, f08c47fec0942fa0"
 
 
 @dataclass
@@ -22,6 +26,7 @@ class ValidationTotals:
     json_ld_blocks: int = 0
     internal_links: int = 0
     sitemap_urls: int = 0
+    adsense_scripts: int = 0
 
 
 class PageParser(HTMLParser):
@@ -37,6 +42,7 @@ class PageParser(HTMLParser):
         self.hrefs: list[tuple[str, int, str]] = []
         self.json_ld_blocks: list[str] = []
         self.current_json_ld: list[str] | None = None
+        self.adsense_scripts: list[dict[str, str | None]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = dict(attrs)
@@ -51,8 +57,12 @@ class PageParser(HTMLParser):
             rel_values = attributes.get("rel", "").lower().split()
             if "canonical" in rel_values:
                 self.canonicals.append(attributes.get("href"))
-        elif tag == "script" and attributes.get("type", "").lower() == "application/ld+json":
-            self.current_json_ld = []
+        elif tag == "script":
+            if attributes.get("type", "").lower() == "application/ld+json":
+                self.current_json_ld = []
+            script_src = attributes.get("src")
+            if script_src and script_src.startswith(ADSENSE_SCRIPT_BASE):
+                self.adsense_scripts.append(attributes)
 
         href = attributes.get("href")
         if href is not None:
@@ -139,6 +149,20 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
     if not any(canonical and canonical.strip() for canonical in parser.canonicals):
         errors.append(f"{page_name}: missing or empty canonical link.")
 
+    totals.adsense_scripts += len(parser.adsense_scripts)
+    if len(parser.adsense_scripts) != 1:
+        errors.append(f"{page_name}: expected exactly one Google AdSense script, found {len(parser.adsense_scripts)}.")
+    else:
+        adsense_script = parser.adsense_scripts[0]
+        if adsense_script.get("src") != ADSENSE_SCRIPT_SRC:
+            errors.append(
+                f"{page_name}: AdSense script src must use client ID '{ADSENSE_CLIENT_ID}'."
+            )
+        if "async" not in adsense_script:
+            errors.append(f"{page_name}: AdSense script must include the async attribute.")
+        if adsense_script.get("crossorigin") != "anonymous":
+            errors.append(f"{page_name}: AdSense script crossorigin must be 'anonymous'.")
+
     for index, json_ld in enumerate(parser.json_ld_blocks, start=1):
         totals.json_ld_blocks += 1
         try:
@@ -223,6 +247,19 @@ def validate_sitemap(pages: list[Path], totals: ValidationTotals) -> list[str]:
     return errors
 
 
+def validate_ads_txt() -> list[str]:
+    ads_txt = ROOT / "ads.txt"
+    if not ads_txt.is_file():
+        return ["ads.txt: file is missing from the repository root."]
+
+    expected_content = f"{ADS_TXT_RECORD}\n"
+    actual_content = ads_txt.read_text(encoding="utf-8")
+    if actual_content != expected_content:
+        return ["ads.txt: content must contain exactly the required AdSense record."]
+
+    return []
+
+
 def main() -> int:
     totals = ValidationTotals()
     pages = public_pages()
@@ -232,6 +269,7 @@ def main() -> int:
         errors.extend(validate_html_page(page, totals))
 
     errors.extend(validate_sitemap(pages, totals))
+    errors.extend(validate_ads_txt())
 
     if errors:
         print("Site validation failed:", file=sys.stderr)
@@ -242,6 +280,7 @@ def main() -> int:
     print(
         "Site validation passed: "
         f"{totals.html_pages} HTML pages, "
+        f"{totals.adsense_scripts} AdSense scripts, "
         f"{totals.json_ld_blocks} JSON-LD blocks, "
         f"{totals.internal_links} internal links, "
         f"{totals.sitemap_urls} sitemap URLs."
