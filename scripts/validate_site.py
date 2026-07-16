@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the static pages and crawl files used by Football Hub."""
+"""Validate the static pages and crawl files used by Vekpal Football."""
 
 from __future__ import annotations
 
@@ -14,6 +14,9 @@ from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = "https://vekpal.com/"
+GA_SCRIPT_BASE = "https://www.googletagmanager.com/gtag/js"
+GA_MEASUREMENT_ID = "G-MJFETE4J77"
+GA_SCRIPT_SRC = f"{GA_SCRIPT_BASE}?id={GA_MEASUREMENT_ID}"
 ADSENSE_SCRIPT_BASE = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
 ADSENSE_CLIENT_ID = "ca-pub-6151638978197241"
 ADSENSE_SCRIPT_SRC = f"{ADSENSE_SCRIPT_BASE}?client={ADSENSE_CLIENT_ID}"
@@ -26,6 +29,7 @@ class ValidationTotals:
     json_ld_blocks: int = 0
     internal_links: int = 0
     sitemap_urls: int = 0
+    ga4_scripts: int = 0
     adsense_scripts: int = 0
 
 
@@ -42,6 +46,9 @@ class PageParser(HTMLParser):
         self.hrefs: list[tuple[str, int, str]] = []
         self.json_ld_blocks: list[str] = []
         self.current_json_ld: list[str] | None = None
+        self.inline_scripts: list[str] = []
+        self.current_inline_script: list[str] | None = None
+        self.ga4_scripts: list[dict[str, str | None]] = []
         self.adsense_scripts: list[dict[str, str | None]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -58,9 +65,14 @@ class PageParser(HTMLParser):
             if "canonical" in rel_values:
                 self.canonicals.append(attributes.get("href"))
         elif tag == "script":
-            if attributes.get("type", "").lower() == "application/ld+json":
-                self.current_json_ld = []
+            script_type = attributes.get("type", "").lower()
             script_src = attributes.get("src")
+            if script_type == "application/ld+json":
+                self.current_json_ld = []
+            elif script_src is None:
+                self.current_inline_script = []
+            if script_src and script_src.startswith(GA_SCRIPT_BASE):
+                self.ga4_scripts.append(attributes)
             if script_src and script_src.startswith(ADSENSE_SCRIPT_BASE):
                 self.adsense_scripts.append(attributes)
 
@@ -71,15 +83,21 @@ class PageParser(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if tag == "title":
             self.in_title = False
-        elif tag == "script" and self.current_json_ld is not None:
-            self.json_ld_blocks.append("".join(self.current_json_ld))
-            self.current_json_ld = None
+        elif tag == "script":
+            if self.current_json_ld is not None:
+                self.json_ld_blocks.append("".join(self.current_json_ld))
+                self.current_json_ld = None
+            elif self.current_inline_script is not None:
+                self.inline_scripts.append("".join(self.current_inline_script))
+                self.current_inline_script = None
 
     def handle_data(self, data: str) -> None:
         if self.in_title:
             self.title_parts.append(data)
         if self.current_json_ld is not None:
             self.current_json_ld.append(data)
+        if self.current_inline_script is not None:
+            self.current_inline_script.append(data)
 
 
 def public_pages() -> list[Path]:
@@ -148,6 +166,21 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
 
     if not any(canonical and canonical.strip() for canonical in parser.canonicals):
         errors.append(f"{page_name}: missing or empty canonical link.")
+
+    totals.ga4_scripts += len(parser.ga4_scripts)
+    if len(parser.ga4_scripts) != 1:
+        errors.append(f"{page_name}: expected exactly one GA4 loader script, found {len(parser.ga4_scripts)}.")
+    else:
+        ga4_script = parser.ga4_scripts[0]
+        if ga4_script.get("src") != GA_SCRIPT_SRC:
+            errors.append(f"{page_name}: GA4 script src must use measurement ID '{GA_MEASUREMENT_ID}'.")
+        if "async" not in ga4_script:
+            errors.append(f"{page_name}: GA4 loader script must include the async attribute.")
+
+    ga4_config = f'gtag("config", "{GA_MEASUREMENT_ID}")'
+    ga4_config_count = sum(script.count(ga4_config) for script in parser.inline_scripts)
+    if ga4_config_count != 1:
+        errors.append(f"{page_name}: expected exactly one GA4 config call, found {ga4_config_count}.")
 
     totals.adsense_scripts += len(parser.adsense_scripts)
     if len(parser.adsense_scripts) != 1:
@@ -280,6 +313,7 @@ def main() -> int:
     print(
         "Site validation passed: "
         f"{totals.html_pages} HTML pages, "
+        f"{totals.ga4_scripts} GA4 scripts, "
         f"{totals.adsense_scripts} AdSense scripts, "
         f"{totals.json_ld_blocks} JSON-LD blocks, "
         f"{totals.internal_links} internal links, "

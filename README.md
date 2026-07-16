@@ -1,4 +1,4 @@
-# Football Hub
+# Vekpal Football
 
 Static football information site for international competitions, national teams,
 club football, popular search guides, and World Cup 2026.
