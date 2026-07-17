@@ -8,7 +8,7 @@ import sys
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 from xml.etree import ElementTree
 
 
@@ -22,9 +22,14 @@ ADSENSE_CLIENT_ID = "ca-pub-6151638978197241"
 ADSENSE_SCRIPT_SRC = f"{ADSENSE_SCRIPT_BASE}?client={ADSENSE_CLIENT_ID}"
 ADS_TXT_RECORD = "google.com, pub-6151638978197241, DIRECT, f08c47fec0942fa0"
 SEARCH_CONSOLE_TOKEN = "rP4ZlqpgXEt-Qd5diwi7s-ljC5pc6Ggj6eKVN1sklyY"
-EXPECTED_PUBLIC_PAGE_COUNT = 17
+EXPECTED_PUBLIC_PAGE_COUNT = 18
 EXPECTED_ARTICLE_COUNT = 12
 EDITORIAL_POLICY_PAGE = ROOT / "editorial-policy" / "index.html"
+CONTACT_PAGE = ROOT / "contact" / "index.html"
+CONTACT_URL = "https://vekpal.com/contact/"
+CONTACT_EMAIL = "vekpal.contact@gmail.com"
+CONTACT_SUBJECT = "Vekpal Footballへのお問い合わせ"
+CONTACT_MAILTO = f"mailto:{CONTACT_EMAIL}?subject={quote(CONTACT_SUBJECT)}"
 REQUIRED_SVGS = (
     ROOT / "assets" / "offside-position-diagram.svg",
     ROOT / "assets" / "football-positions-diagram.svg",
@@ -63,6 +68,7 @@ class PageParser(HTMLParser):
         self.title_parts: list[str] = []
         self.in_title = False
         self.descriptions: list[str | None] = []
+        self.meta_tags: list[dict[str, str | None]] = []
         self.canonicals: list[str | None] = []
         self.hrefs: list[tuple[str, int, str]] = []
         self.json_ld_blocks: list[str] = []
@@ -119,10 +125,13 @@ class PageParser(HTMLParser):
             self.html_lang = attributes.get("lang")
         elif tag == "title":
             self.in_title = True
-        elif tag == "meta" and attributes.get("name", "").lower() == "description":
-            self.descriptions.append(attributes.get("content"))
-        elif tag == "meta" and attributes.get("name", "").lower() == "google-site-verification":
-            self.search_console_tokens.append(attributes.get("content"))
+        elif tag == "meta":
+            self.meta_tags.append(attributes)
+            meta_name = attributes.get("name", "").lower()
+            if meta_name == "description":
+                self.descriptions.append(attributes.get("content"))
+            elif meta_name == "google-site-verification":
+                self.search_console_tokens.append(attributes.get("content"))
         elif tag == "link":
             rel_values = attributes.get("rel", "").lower().split()
             if "canonical" in rel_values:
@@ -351,6 +360,14 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
     if len(footer_editorial_links) != 1:
         errors.append(f"{page_name}: footer must contain exactly one Editorial Policy link.")
 
+    footer_contact_links = [
+        href
+        for href, _line, _tag in parser.footer_hrefs
+        if resolve_local_href(page, href) == CONTACT_PAGE
+    ]
+    if len(footer_contact_links) != 1:
+        errors.append(f"{page_name}: footer must contain exactly one Contact link.")
+
     for href, line, tag in parser.hrefs:
         if href.startswith("#"):
             fragment = unquote(urlsplit(href).fragment)
@@ -415,6 +432,16 @@ def parse_page(page: Path) -> PageParser:
     parser.feed(page.read_text(encoding="utf-8"))
     parser.close()
     return parser
+
+
+def meta_values(parser: PageParser, attribute: str, key: str) -> list[str | None]:
+    """Return content values for matching named or property metadata."""
+
+    return [
+        attributes.get("content")
+        for attributes in parser.meta_tags
+        if attributes.get(attribute, "").lower() == key.lower()
+    ]
 
 
 def validate_index_page() -> list[str]:
@@ -487,6 +514,168 @@ def validate_index_page() -> list[str]:
         errors.append("index.html: countdown.js must be loaded exactly once.")
 
     return errors
+
+
+def validate_contact_page() -> list[str]:
+    errors: list[str] = []
+    if not CONTACT_PAGE.is_file():
+        return ["contact/index.html: contact page is missing."]
+
+    parser = parse_page(CONTACT_PAGE)
+    page_name = display_path(CONTACT_PAGE)
+    content = CONTACT_PAGE.read_text(encoding="utf-8")
+
+    if parser.canonicals != [CONTACT_URL]:
+        errors.append(f"{page_name}: canonical must be exactly '{CONTACT_URL}'.")
+    if parser.search_console_tokens != [SEARCH_CONSOLE_TOKEN]:
+        errors.append(f"{page_name}: Search Console verification meta tag changed or is missing.")
+
+    expected_meta = {
+        ("property", "og:type"): "website",
+        ("property", "og:site_name"): "Vekpal Football",
+        ("property", "og:title"): "お問い合わせ｜Vekpal Football",
+        ("property", "og:url"): CONTACT_URL,
+        ("property", "og:image"): f"{BASE_URL}assets/hero-stadium.png",
+        ("property", "og:locale"): "ja_JP",
+        ("name", "twitter:card"): "summary_large_image",
+        ("name", "twitter:title"): "お問い合わせ｜Vekpal Football",
+        ("name", "twitter:image"): f"{BASE_URL}assets/hero-stadium.png",
+    }
+    for (attribute, key), expected in expected_meta.items():
+        values = meta_values(parser, attribute, key)
+        if values != [expected]:
+            errors.append(f"{page_name}: expected one {key} meta value '{expected}', found {values}.")
+
+    for attribute, key in (
+        ("property", "og:description"),
+        ("property", "og:image:alt"),
+        ("name", "twitter:description"),
+        ("name", "twitter:image:alt"),
+    ):
+        values = meta_values(parser, attribute, key)
+        if len(values) != 1 or not values[0] or not values[0].strip():
+            errors.append(f"{page_name}: expected one non-empty {key} meta value.")
+
+    if len(parser.json_ld_blocks) != 1:
+        errors.append(f"{page_name}: expected exactly one JSON-LD block, found {len(parser.json_ld_blocks)}.")
+    else:
+        try:
+            webpage = json.loads(parser.json_ld_blocks[0])
+        except json.JSONDecodeError:
+            webpage = None
+        if not isinstance(webpage, dict) or webpage.get("@type") != "WebPage":
+            errors.append(f"{page_name}: the JSON-LD block must describe one WebPage.")
+        else:
+            expected_webpage_fields = {
+                "url": CONTACT_URL,
+                "mainEntityOfPage": CONTACT_URL,
+                "inLanguage": "ja-JP",
+            }
+            for key, expected in expected_webpage_fields.items():
+                if webpage.get(key) != expected:
+                    errors.append(f"{page_name}: WebPage {key} must be '{expected}'.")
+            publisher = webpage.get("publisher")
+            if not isinstance(publisher, dict) or publisher.get("name") != "Vekpal Football":
+                errors.append(f"{page_name}: WebPage publisher must be Vekpal Football.")
+
+    ga4_sources = [attributes.get("src") for attributes in parser.ga4_scripts]
+    if ga4_sources != [GA_SCRIPT_SRC]:
+        errors.append(f"{page_name}: contact page must retain the exact GA4 loader.")
+    adsense_sources = [attributes.get("src") for attributes in parser.adsense_scripts]
+    if adsense_sources != [ADSENSE_SCRIPT_SRC]:
+        errors.append(f"{page_name}: contact page must retain the exact AdSense loader.")
+
+    hrefs = [href for href, _line, _tag in parser.hrefs]
+    if hrefs.count(CONTACT_MAILTO) != 1:
+        errors.append(f"{page_name}: expected one mailto link with the required subject.")
+    if not is_ignored_href(CONTACT_MAILTO) or resolve_local_href(CONTACT_PAGE, CONTACT_MAILTO) is not None:
+        errors.append(f"{page_name}: mailto links must not be treated as local files.")
+
+    visible_text = " ".join(parser.visible_text_parts)
+    if visible_text.count(CONTACT_EMAIL) != 1 or content.count(CONTACT_EMAIL) != 2:
+        errors.append(f"{page_name}: contact email must appear once visibly and once in its mailto link.")
+
+    required_text = (
+        "一般的なお問い合わせ",
+        "記事内容の訂正依頼",
+        "著作権・権利関係",
+        "広告・掲載に関するお問い合わせ",
+        "返信を保証するものではありません",
+        "営業・勧誘などの内容によっては返信しない場合があります",
+        "パスワード",
+        "住所",
+        "電話番号",
+        "決済情報",
+        "機密情報",
+        "お問い合わせフォームは設置していません",
+    )
+    for text in required_text:
+        if text not in visible_text:
+            errors.append(f"{page_name}: required contact guidance is missing: '{text}'.")
+
+    if parser.tag_counts.get("form", 0):
+        errors.append(f"{page_name}: an inquiry form must not be implemented.")
+
+    required_footer_targets = {
+        "top page": ROOT / "index.html",
+        "About": ROOT / "about" / "index.html",
+        "Privacy Policy": ROOT / "privacy-policy" / "index.html",
+        "Editorial Policy": EDITORIAL_POLICY_PAGE,
+        "All Guides": ROOT / "guides" / "index.html",
+    }
+    for label, target in required_footer_targets.items():
+        matches = [
+            href
+            for href, _line, _tag in parser.footer_hrefs
+            if resolve_local_href(CONTACT_PAGE, href) == target
+        ]
+        if len(matches) != 1:
+            errors.append(f"{page_name}: footer must link exactly once to {label}.")
+
+    return errors
+
+
+def validate_contact_email_location() -> list[str]:
+    """Prevent the public contact address from leaking into unrelated files."""
+
+    allowed = {CONTACT_PAGE.resolve(), Path(__file__).resolve()}
+    email_bytes = CONTACT_EMAIL.encode("utf-8")
+    matches: list[Path] = []
+
+    for path in ROOT.rglob("*"):
+        if not path.is_file() or ".git" in path.parts or "__pycache__" in path.parts:
+            continue
+        if email_bytes in path.read_bytes():
+            matches.append(path.resolve())
+
+    unexpected = sorted(path for path in matches if path not in allowed)
+    if unexpected:
+        names = ", ".join(display_path(path) for path in unexpected)
+        return [f"contact email appears in unexpected files: {names}."]
+    if CONTACT_PAGE.resolve() not in matches:
+        return ["contact/index.html: expected contact email is missing."]
+    return []
+
+
+def validate_privacy_contact_disclosure() -> list[str]:
+    page = ROOT / "privacy-policy" / "index.html"
+    content = page.read_text(encoding="utf-8")
+    required_text = (
+        "送信元のメールアドレス",
+        "氏名またはハンドルネーム",
+        "お問い合わせ本文",
+        "お問い合わせへの返信",
+        "本人確認",
+        "記事内容の訂正対応",
+        "権利関係の確認",
+        "目的を超えて利用したり、不必要に第三者へ提供したりすることはありません",
+        "必要と考えられる期間に限って、適切な方法で管理するよう努めます",
+    )
+    return [
+        f"privacy-policy/index.html: contact disclosure is missing: '{text}'."
+        for text in required_text
+        if text not in content
+    ]
 
 
 def validate_schedule_page() -> list[str]:
@@ -625,6 +814,31 @@ def validate_sitemap(pages: list[Path], totals: ValidationTotals) -> list[str]:
     for loc in seen - expected_urls:
         errors.append(f"sitemap.xml: URL has no corresponding public page: '{loc}'.")
 
+    contact_entries: list[dict[str, str]] = []
+    for element in root.iter():
+        if element.tag.rsplit("}", 1)[-1] != "url":
+            continue
+        entry = {
+            child.tag.rsplit("}", 1)[-1]: (child.text or "").strip()
+            for child in element
+        }
+        if entry.get("loc") == CONTACT_URL:
+            contact_entries.append(entry)
+
+    if len(contact_entries) != 1:
+        errors.append(f"sitemap.xml: expected exactly one Contact URL entry, found {len(contact_entries)}.")
+    else:
+        expected_contact_entry = {
+            "loc": CONTACT_URL,
+            "lastmod": "2026-07-17",
+            "changefreq": "yearly",
+            "priority": "0.5",
+        }
+        if contact_entries[0] != expected_contact_entry:
+            errors.append(
+                f"sitemap.xml: Contact entry must be {expected_contact_entry}, found {contact_entries[0]}."
+            )
+
     return errors
 
 
@@ -660,6 +874,9 @@ def main() -> int:
         )
 
     errors.extend(validate_index_page())
+    errors.extend(validate_contact_page())
+    errors.extend(validate_contact_email_location())
+    errors.extend(validate_privacy_contact_disclosure())
     errors.extend(validate_schedule_page())
     errors.extend(validate_article_figures())
     errors.extend(validate_svgs())

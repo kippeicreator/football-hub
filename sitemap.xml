@@ -31,6 +31,12 @@
     <priority>0.4</priority>
   </url>
   <url>
+    <loc>https://vekpal.com/contact/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://vekpal.com/world-cup-past-winners/</loc>
     <lastmod>2026-07-13</lastmod>
     <changefreq>yearly</changefreq>
