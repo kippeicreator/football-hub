@@ -22,8 +22,8 @@ ADSENSE_CLIENT_ID = "ca-pub-6151638978197241"
 ADSENSE_SCRIPT_SRC = f"{ADSENSE_SCRIPT_BASE}?client={ADSENSE_CLIENT_ID}"
 ADS_TXT_RECORD = "google.com, pub-6151638978197241, DIRECT, f08c47fec0942fa0"
 SEARCH_CONSOLE_TOKEN = "rP4ZlqpgXEt-Qd5diwi7s-ljC5pc6Ggj6eKVN1sklyY"
-EXPECTED_PUBLIC_PAGE_COUNT = 28
-EXPECTED_ARTICLE_COUNT = 22
+EXPECTED_PUBLIC_PAGE_COUNT = 38
+EXPECTED_ARTICLE_COUNT = 32
 EDITORIAL_POLICY_PAGE = ROOT / "editorial-policy" / "index.html"
 CONTACT_PAGE = ROOT / "contact" / "index.html"
 CONTACT_URL = "https://vekpal.com/contact/"
@@ -313,8 +313,11 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
         if "async" not in ga4_script:
             errors.append(f"{page_name}: GA4 loader script must include the async attribute.")
 
-    ga4_config = f'gtag("config", "{GA_MEASUREMENT_ID}")'
-    ga4_config_count = sum(script.count(ga4_config) for script in parser.inline_scripts)
+    ga4_config = f'gtag("config","{GA_MEASUREMENT_ID}")'
+    ga4_config_count = sum(
+        script.replace(" ", "").replace("\n", "").count(ga4_config)
+        for script in parser.inline_scripts
+    )
     if ga4_config_count != 1:
         errors.append(f"{page_name}: expected exactly one GA4 config call, found {ga4_config_count}.")
 
@@ -546,7 +549,7 @@ def validate_index_page() -> list[str]:
         errors.append("index.html: countdown fallback label and detail must be present.")
 
     card_requirements = {
-        "article-card": (22, 22),
+        "article-card": (32, 32),
         "guide-card": (3, 6),
         "topic-card": (1, 6),
         "info-card": (3, 3),
