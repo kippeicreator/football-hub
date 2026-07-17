@@ -878,6 +878,33 @@ h3 {
   max-width: 860px;
 }
 
+.breadcrumbs {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0 0 24px;
+}
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumbs li:not(:last-child)::after {
+  content: "›";
+  margin-left: 6px;
+}
+
+.breadcrumbs a {
+  color: var(--green);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .article-lead {
   border-bottom: 1px solid var(--line);
   margin-bottom: clamp(34px, 6vw, 58px);
@@ -987,6 +1014,52 @@ h3 {
 
 .article-section li + li {
   margin-top: 8px;
+}
+
+.article-table-wrap {
+  margin-top: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-table {
+  border-collapse: collapse;
+  min-width: 500px;
+  width: 100%;
+}
+
+.article-table th,
+.article-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.article-table th {
+  background: rgba(16, 19, 21, 0.06);
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 900;
+  vertical-align: top;
+  width: 31%;
+}
+
+.article-table td {
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1.75;
+}
+
+.article-faq-item + .article-faq-item {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.article-faq-item h3 {
+  font-size: 1.04rem;
+  line-height: 1.5;
+  margin-bottom: 8px;
 }
 
 .related-guides .guide-list {

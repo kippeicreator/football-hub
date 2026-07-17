@@ -22,8 +22,8 @@ ADSENSE_CLIENT_ID = "ca-pub-6151638978197241"
 ADSENSE_SCRIPT_SRC = f"{ADSENSE_SCRIPT_BASE}?client={ADSENSE_CLIENT_ID}"
 ADS_TXT_RECORD = "google.com, pub-6151638978197241, DIRECT, f08c47fec0942fa0"
 SEARCH_CONSOLE_TOKEN = "rP4ZlqpgXEt-Qd5diwi7s-ljC5pc6Ggj6eKVN1sklyY"
-EXPECTED_PUBLIC_PAGE_COUNT = 18
-EXPECTED_ARTICLE_COUNT = 12
+EXPECTED_PUBLIC_PAGE_COUNT = 28
+EXPECTED_ARTICLE_COUNT = 22
 EDITORIAL_POLICY_PAGE = ROOT / "editorial-policy" / "index.html"
 CONTACT_PAGE = ROOT / "contact" / "index.html"
 CONTACT_URL = "https://vekpal.com/contact/"
@@ -80,6 +80,7 @@ class PageParser(HTMLParser):
         self.search_console_tokens: list[str | None] = []
         self.srcs: list[tuple[str, int, str]] = []
         self.ids: set[str] = set()
+        self.id_counts: dict[str, int] = {}
         self.footer_hrefs: list[tuple[str, int, str]] = []
         self.in_footer = False
         self.in_script = False
@@ -107,6 +108,7 @@ class PageParser(HTMLParser):
         element_id = attributes.get("id")
         if element_id:
             self.ids.add(element_id)
+            self.id_counts[element_id] = self.id_counts.get(element_id, 0) + 1
             if element_id in self.element_text:
                 self.text_capture_stack.append((tag, element_id))
 
@@ -265,11 +267,38 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
     if not any(description and description.strip() for description in parser.descriptions):
         errors.append(f"{page_name}: missing or empty meta description.")
 
+    if parser.tag_counts.get("h1") != 1:
+        errors.append(f"{page_name}: expected exactly one h1, found {parser.tag_counts.get('h1', 0)}.")
+
+    duplicate_ids = sorted(element_id for element_id, count in parser.id_counts.items() if count > 1)
+    if duplicate_ids:
+        errors.append(f"{page_name}: duplicate id values found: {duplicate_ids}.")
+
     expected_canonical = page_url(page)
     if parser.canonicals != [expected_canonical]:
         errors.append(
             f"{page_name}: expected one canonical '{expected_canonical}', found {parser.canonicals}."
         )
+
+    og_type_values = meta_values(parser, "property", "og:type")
+    if len(og_type_values) != 1 or og_type_values[0] not in {"article", "website"}:
+        errors.append(f"{page_name}: og:type must be exactly one of article or website.")
+    og_url_values = meta_values(parser, "property", "og:url")
+    if og_url_values != [expected_canonical]:
+        errors.append(
+            f"{page_name}: expected one og:url meta value '{expected_canonical}', found {og_url_values}."
+        )
+    for key in ("og:title", "og:description"):
+        values = meta_values(parser, "property", key)
+        if len(values) != 1 or not (values[0] or "").strip():
+            errors.append(f"{page_name}: expected one non-empty {key} meta value.")
+    twitter_values = meta_values(parser, "name", "twitter:card")
+    if twitter_values != ["summary_large_image"]:
+        errors.append(f"{page_name}: expected twitter:card to be summary_large_image.")
+    for key in ("twitter:title", "twitter:description"):
+        values = meta_values(parser, "name", key)
+        if len(values) != 1 or not (values[0] or "").strip():
+            errors.append(f"{page_name}: expected one non-empty {key} meta value.")
 
     if page == ROOT / "index.html" and parser.search_console_tokens != [SEARCH_CONSOLE_TOKEN]:
         errors.append(f"{page_name}: Search Console verification meta tag changed or is missing.")
@@ -320,6 +349,8 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
         totals.article_pages += 1
         if len(article_records) != 1:
             errors.append(f"{page_name}: expected one Article JSON-LD block, found {len(article_records)}.")
+        if og_type_values != ["article"]:
+            errors.append(f"{page_name}: Article page must use og:type=article.")
         article = article_records[0]
         published = article.get("datePublished")
         modified = article.get("dateModified")
@@ -352,6 +383,40 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
         if "Vekpal Football" not in visible_text:
             errors.append(f"{page_name}: article metadata is missing the operator name Vekpal Football.")
 
+        breadcrumbs = [
+            record
+            for record in parsed_json_ld
+            if isinstance(record, dict) and record.get("@type") == "BreadcrumbList"
+        ]
+        if len(breadcrumbs) != 1:
+            errors.append(f"{page_name}: expected one BreadcrumbList JSON-LD block, found {len(breadcrumbs)}.")
+        else:
+            items = breadcrumbs[0].get("itemListElement")
+            expected_items = [
+                ("ホーム", BASE_URL),
+                ("サッカーガイド", f"{BASE_URL}guides/"),
+                (article.get("headline"), expected_canonical),
+            ]
+            if not isinstance(items, list) or len(items) != 3:
+                errors.append(f"{page_name}: BreadcrumbList must contain three items.")
+            else:
+                for position, (name, url) in enumerate(expected_items, start=1):
+                    item = items[position - 1]
+                    if not isinstance(item, dict) or (
+                        item.get("position") != position
+                        or item.get("name") != name
+                        or item.get("item") != url
+                    ):
+                        errors.append(f"{page_name}: BreadcrumbList item {position} is invalid.")
+
+        breadcrumb_navs = [
+            attributes
+            for tag, classes, attributes, _line in parser.class_elements
+            if tag == "nav" and "breadcrumbs" in classes
+        ]
+        if len(breadcrumb_navs) != 1 or breadcrumb_navs[0].get("aria-label") != "パンくずリスト":
+            errors.append(f"{page_name}: expected one visible breadcrumb navigation.")
+
     footer_editorial_links = [
         href
         for href, _line, _tag in parser.footer_hrefs
@@ -369,6 +434,9 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
         errors.append(f"{page_name}: footer must contain exactly one Contact link.")
 
     for href, line, tag in parser.hrefs:
+        if not href.strip():
+            errors.append(f"{page_name}:{line}: <{tag}> has an empty href.")
+            continue
         if href.startswith("#"):
             fragment = unquote(urlsplit(href).fragment)
             if fragment and fragment not in parser.ids:
@@ -383,6 +451,20 @@ def validate_html_page(page: Path, totals: ValidationTotals) -> list[str]:
             errors.append(f"{page_name}:{line}: <{tag}> href '{href}' uses an unsupported local path.")
         elif not target.exists():
             errors.append(f"{page_name}:{line}: <{tag}> href '{href}' does not exist locally.")
+
+    for tag, _classes, attributes, line in parser.class_elements:
+        if tag == "img" and not (attributes.get("alt") or "").strip():
+            errors.append(f"{page_name}:{line}: image is missing meaningful alt text.")
+        if tag == "a" and attributes.get("target") == "_blank":
+            rel_values = set((attributes.get("rel") or "").split())
+            if not {"noopener", "noreferrer"}.issubset(rel_values):
+                errors.append(
+                    f"{page_name}:{line}: external target=_blank link must use rel=noopener noreferrer."
+                )
+
+    content = page.read_text(encoding="utf-8").lower()
+    if "localhost" in content:
+        errors.append(f"{page_name}: development localhost URL must not be published.")
 
     for src, line, tag in parser.srcs:
         if is_ignored_href(src):
@@ -464,7 +546,7 @@ def validate_index_page() -> list[str]:
         errors.append("index.html: countdown fallback label and detail must be present.")
 
     card_requirements = {
-        "article-card": (12, 12),
+        "article-card": (22, 22),
         "guide-card": (3, 6),
         "topic-card": (1, 6),
         "info-card": (3, 3),
@@ -842,6 +924,32 @@ def validate_sitemap(pages: list[Path], totals: ValidationTotals) -> list[str]:
     return errors
 
 
+def validate_unique_page_metadata(pages: list[Path]) -> list[str]:
+    """Ensure search result snippets are unique across the public site."""
+
+    errors: list[str] = []
+    for label, values in (
+        (
+            "title",
+            [(display_path(page), "".join(parse_page(page).title_parts).strip()) for page in pages],
+        ),
+        (
+            "meta description",
+            [
+                (display_path(page), (parse_page(page).descriptions[0] or "").strip())
+                for page in pages
+            ],
+        ),
+    ):
+        occurrences: dict[str, list[str]] = {}
+        for page_name, value in values:
+            occurrences.setdefault(value, []).append(page_name)
+        duplicates = {value: names for value, names in occurrences.items() if value and len(names) > 1}
+        for value, names in duplicates.items():
+            errors.append(f"site: duplicate {label} on {', '.join(names)}: '{value}'.")
+    return errors
+
+
 def validate_ads_txt() -> list[str]:
     ads_txt = ROOT / "ads.txt"
     if not ads_txt.is_file():
@@ -881,6 +989,7 @@ def main() -> int:
     errors.extend(validate_article_figures())
     errors.extend(validate_svgs())
     errors.extend(validate_sitemap(pages, totals))
+    errors.extend(validate_unique_page_metadata(pages))
     errors.extend(validate_ads_txt())
 
     if errors:
